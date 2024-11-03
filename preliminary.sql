@@ -82,3 +82,5 @@ CREATE TABLE preliminary (
 );
 
 COPY preliminary FROM 'C:\Program Files\PostgreSQL\17\import\hmda_2017_nj_all-records_labels.csv' (FORMAT csv, HEADER true, DELIMITER ',', NULL '', FORCE_NULL (application_date_indicator, hud_median_family_income, loan_amount_000s));
+-- Used https://www.postgresql.org/docs/17/sql-copy.html
+
