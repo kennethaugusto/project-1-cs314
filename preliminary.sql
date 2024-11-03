@@ -55,7 +55,7 @@ CREATE TABLE preliminary (
     applicant_sex INTEGER,
     co_applicant_sex_name VARCHAR(90),
     co_applicant_sex INTEGER,
-    applicant_income_000s VARCHAR(4),
+    applicant_income_000s VARCHAR(8),
     purchaser_type_name VARCHAR(80),
     purchaser_type VARCHAR(1),
     denial_reason_name_1 VARCHAR(50),
@@ -78,8 +78,7 @@ CREATE TABLE preliminary (
     tract_to_msamd_income VARCHAR(20),
     number_of_owner_occupied_units VARCHAR(8),
     number_of_1_to_4_family_units VARCHAR(8),
-    application_date_indicator VARCHAR(1)
+    application_date_indicator INTEGER
 );
 
-COPY preliminary FROM 'C:\Program Files\PostgreSQL\17\import\hmda_2017_nj_all-records_labels.csv' 
-WITH (FORMAT csv, HEADER true, DELIMITER ',', NULL '');
+COPY preliminary FROM 'C:\Program Files\PostgreSQL\17\import\hmda_2017_nj_all-records_labels.csv' (FORMAT csv, HEADER true, DELIMITER ',', NULL '', FORCE_NULL (application_date_indicator, hud_median_family_income, loan_amount_000s));
