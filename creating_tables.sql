@@ -211,15 +211,155 @@ CREATE TABLE DenialReasons(
     FOREIGN KEY (denial_code) REFERENCES DenialCode(denial_code)
 );
 
--- first statement for applicant ethnicities
+-- applicant ethnicities
 INSERT INTO Ethnicity(ethnicity, ethnicity_name)
 SELECT DISTINCT applicant_ethnicity, applicant_ethnicity_name FROM preliminary
-WHERE applicant_ethnicity IS NOT NULL AND applicant_ethnicity_name IS NOT NULL
+WHERE applicant_ethnicity IS NOT NULL
 ON CONFLICT(ethnicity) DO NOTHING;
 
--- second statement for coapplicant ethnicities
-INSERT INTO Ethnicity (ethnicity, ethnicity_name)
-SELECT DISTINCT co_applicant_ethnicity, co_applicant_ethnicity_name
-FROM preliminary
-WHERE co_applicant_ethnicity IS NOT NULL AND co_applicant_ethnicity_name IS NOT NULL
+-- coapplicant ethnicities
+INSERT INTO Ethnicity(ethnicity, ethnicity_name)
+SELECT DISTINCT co_applicant_ethnicity, co_applicant_ethnicity_name FROM preliminary
+WHERE co_applicant_ethnicity IS NOT NULL
 ON CONFLICT(ethnicity) DO NOTHING;
+
+-- applicant race 1
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT applicant_race_1, applicant_race_name_1 FROM preliminary
+WHERE applicant_race_1 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- applicant race 2
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT applicant_race_2, applicant_race_name_2 FROM preliminary
+WHERE applicant_race_2 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- applicant race 3
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT applicant_race_3, applicant_race_name_3 FROM preliminary
+WHERE applicant_race_3 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- applicant race 4
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT applicant_race_4, applicant_race_name_4 FROM preliminary
+WHERE applicant_race_4 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- applicant race 5
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT applicant_race_5, applicant_race_name_5 FROM preliminary
+WHERE applicant_race_5 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- coapplicant race 1
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT co_applicant_race_1, co_applicant_race_name_1 FROM preliminary
+WHERE co_applicant_race_1 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- coapplicant race 2
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT co_applicant_race_2, co_applicant_race_name_2 FROM preliminary
+WHERE co_applicant_race_2 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- coapplicant race 3
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT co_applicant_race_3, co_applicant_race_name_3 FROM preliminary
+WHERE co_applicant_race_3 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- coapplicant race 4
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT co_applicant_race_4, co_applicant_race_name_4 FROM preliminary
+WHERE co_applicant_race_4 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- coapplicant race 5
+INSERT INTO RaceCode(race_code, race_name)
+SELECT DISTINCT co_applicant_race_5, co_applicant_race_name_5 FROM preliminary
+WHERE co_applicant_race_5 IS NOT NULL
+ON CONFLICT(race_code) DO NOTHING;
+
+-- applicant sex
+INSERT INTO Sex(sex, sex_name)
+SELECT DISTINCT applicant_sex, applicant_sex_name FROM preliminary
+WHERE applicant_sex IS NOT NULL
+ON CONFLICT(sex) DO NOTHING;
+
+-- coapplicant sex
+INSERT INTO Sex(sex, sex_name)
+SELECT DISTINCT co_applicant_sex, co_applicant_sex_name FROM preliminary
+WHERE co_applicant_sex IS NOT NULL
+ON CONFLICT(sex) DO NOTHING;
+
+-- agency
+INSERT INTO Agency(agency_code, agency_name, agency_abbr)
+SELECT DISTINCT agency_code, agency_name, agency_abbr FROM preliminary
+WHERE agency_code IS NOT NULL;
+
+-- purchaser type
+INSERT INTO PurchaserType(purchaser_type, purchaser_type_name)
+SELECT DISTINCT purchaser_type, purchaser_type_name FROM preliminary
+WHERE purchaser_type IS NOT NULL;
+
+-- property type
+INSERT INTO PropertyType(property_type, property_type_name)
+SELECT DISTINCT property_type, property_type_name FROM preliminary
+WHERE property_type IS NOT NULL;
+
+-- loan type
+INSERT INTO LoanType(loan_type, loan_type_name)
+SELECT DISTINCT loan_type, loan_type_name FROM preliminary
+WHERE loan_type IS NOT NULL;
+
+-- loan purpose
+INSERT INTO LoanPurpose(loan_purpose, loan_purpose_name)
+SELECT DISTINCT loan_purpose, loan_purpose_name FROM preliminary
+WHERE loan_purpose IS NOT NULL;
+
+-- state
+INSERT INTO State(state_code, state_name, state_abbr)
+SELECT DISTINCT state_code, state_name, state_abbr FROM preliminary
+WHERE state_code IS NOT NULL;
+
+-- county
+INSERT INTO County(county_code, county_name)
+SELECT DISTINCT county_code, county_name FROM preliminary
+WHERE county_code IS NOT NULL;
+
+-- msamd
+INSERT INTO MSAMD(msamd, msamd_name)
+SELECT DISTINCT msamd, msamd_name FROM preliminary
+WHERE msamd IS NOT NULL;
+
+-- preapproval
+INSERT INTO Preapproval(preapproval, preapproval_name)
+SELECT DISTINCT preapproval, preapproval_name FROM preliminary
+WHERE preapproval IS NOT NULL;
+
+-- owner occupancy
+INSERT INTO OwnerOccupancy(owner_occupancy, owner_occupancy_name)
+SELECT DISTINCT owner_occupancy, owner_occupancy_name FROM preliminary
+WHERE owner_occupancy IS NOT NULL;
+
+-- action taken
+INSERT INTO ActionTaken(action_taken, action_taken_name)
+SELECT DISTINCT action_taken, action_taken_name FROM preliminary
+WHERE action_taken IS NOT NULL;
+
+-- hoepa status
+INSERT INTO HoepaStatus(hoepa_status, hoepa_status_name)
+SELECT DISTINCT hoepa_status, hoepa_status_name FROM preliminary
+WHERE hoepa_status IS NOT NULL;
+
+-- lien status
+INSERT INTO LienStatus(lien_status, lien_status_name)
+SELECT DISTINCT lien_status, lien_status_name FROM preliminary
+WHERE lien_status IS NOT NULL;
+
+-- null table
+INSERT INTO NullTable(application_date_indicator, sequence_number, edit_status, edit_status_name)
+SELECT DISTINCT application_date_indicator, sequence_number, edit_status, edit_status_name FROM preliminary;
