@@ -40,13 +40,13 @@ CREATE TABLE Sex(
 ); -- select distinct sex?
 
 CREATE TABLE Agency(
-    agency_code VARCHAR(1) PRIMARY KEY,
+    agency_code INTEGER PRIMARY KEY,
     agency_name VARCHAR(50),
     agency_abbr VARCHAR(5)
 );
 
 CREATE TABLE PurchaserType(
-    purchaser_type VARCHAR(1) PRIMARY KEY,
+    purchaser_type INTEGER PRIMARY KEY,
     purchaser_type_name VARCHAR(80)
 );
 
@@ -82,7 +82,7 @@ CREATE TABLE MSAMD(
 );
 
 CREATE TABLE Preapproval(
-    preapproval VARCHAR(1) PRIMARY KEY,
+    preapproval INTEGER PRIMARY KEY,
     preapproval_name VARCHAR(30)
 );
 
@@ -97,12 +97,12 @@ CREATE TABLE ActionTaken(
 );
 
 CREATE TABLE HoepaStatus(
-    hoepa_status VARCHAR(1) PRIMARY KEY,
+    hoepa_status INTEGER PRIMARY KEY,
     hoepa_status_name VARCHAR(20)
 );
 
 CREATE TABLE LienStatus(
-    lien_status VARCHAR(1) PRIMARY KEY,
+    lien_status INTEGER PRIMARY KEY,
     lien_status_name VARCHAR(35)
 );
 
@@ -170,20 +170,20 @@ CREATE TABLE Application(
     application_id SERIAL PRIMARY KEY,
     as_of_year INTEGER,
     respondent_id VARCHAR(10),
-    agency_code VARCHAR(1),
+    agency_code INTEGER,
     loan_type INTEGER,
     loan_purpose INTEGER,
     owner_occupancy INTEGER,
     loan_amount_000s INTEGER,
-    preapproval VARCHAR(1),
+    preapproval INTEGER,
     action_taken INTEGER,
     applicant_id INTEGER,
     property_id INTEGER,
     location_id INTEGER,
-    purchaser_type VARCHAR(1),
-    rate_spread VARCHAR(5),
-    hoepa_status VARCHAR(1),
-    lien_status VARCHAR(1),
+    purchaser_type INTEGER,
+    rate_spread NUMERIC(5, 2),
+    hoepa_status INTEGER,
+    lien_status INTEGER,
     FOREIGN KEY (hoepa_status) REFERENCES HoepaStatus(hoepa_status),
     FOREIGN KEY (lien_status) REFERENCES LienStatus(lien_status),
     FOREIGN KEY (action_taken) REFERENCES ActionTaken(action_taken),
@@ -210,3 +210,16 @@ CREATE TABLE DenialReasons(
     FOREIGN KEY (application_id) REFERENCES Application(application_id),
     FOREIGN KEY (denial_code) REFERENCES DenialCode(denial_code)
 );
+
+-- first statement for applicant ethnicities
+INSERT INTO Ethnicity(ethnicity, ethnicity_name)
+SELECT DISTINCT applicant_ethnicity, applicant_ethnicity_name FROM preliminary
+WHERE applicant_ethnicity IS NOT NULL AND applicant_ethnicity_name IS NOT NULL
+ON CONFLICT(ethnicity) DO NOTHING;
+
+-- second statement for coapplicant ethnicities
+INSERT INTO Ethnicity (ethnicity, ethnicity_name)
+SELECT DISTINCT co_applicant_ethnicity, co_applicant_ethnicity_name
+FROM preliminary
+WHERE co_applicant_ethnicity IS NOT NULL AND co_applicant_ethnicity_name IS NOT NULL
+ON CONFLICT(ethnicity) DO NOTHING;
