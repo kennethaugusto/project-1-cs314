@@ -363,3 +363,13 @@ WHERE lien_status IS NOT NULL;
 -- null table
 INSERT INTO NullTable(application_date_indicator, sequence_number, edit_status, edit_status_name)
 SELECT DISTINCT application_date_indicator, sequence_number, edit_status, edit_status_name FROM preliminary;
+
+-- applicant
+INSERT INTO Applicant(applicant_ethnicity, applicant_sex, coapplicant_ethnicity, coapplicant_sex, applicant_income_000s)
+SELECT applicant_ethnicity, applicant_sex, co_applicant_ethnicity, co_applicant_sex, applicant_income_000s FROM preliminary;
+
+-- applicant race 1
+-- INSERT INTO ApplicantRace(applicant_id)
+-- SELECT applicant_id FROM Applicant;
+-- UPDATE ApplicantRace SET race_code = (SELECT applicant_race_1 FROM preliminary WHERE );
+-- UPDATE ApplicantRace SET race_num = 1 WHERE race_num IS NULL;
