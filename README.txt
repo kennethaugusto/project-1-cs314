@@ -9,6 +9,7 @@
 - In order to copy the csv into the table, we referenced the following site: https://www.postgresqltutorial.com/postgresql-tutorial/import-csv-file-into-posgresql-table/. We used this to understand the basic procedure and then we designed our own table to copy it into. (We labeled columns and assigned what we believed to be appropriate variable types for each column). 
 - To learn how to create new primary keys (not specified in csv) we referenced: https://neon.tech/postgresql/postgresql-tutorial/postgresql-primary-key
 - To learn how to alter a table to add a column: https://www.postgresql.org/docs/current/sql-altertable.html
+- Used https://www.postgresql.org/docs/current/sql-insert.html to figure out how to not enter the same key twice when importing data from two different columns into the same table (such as the applicant ethnicity and coapplicant ethnicity). Explained better in #4
 - Sarah did preliminary.sql. Together, we all decided how to put the tables into 3nf form, dividing the columns into separate tables and deciding how we would connect the tables using foreign keys and primary keys. Sarah made the create table statements. 
 - Sarah did the insert statements for ethnicity, racecode, denialcode, application, applicant race, coapplicant race, denialreasons
 - Nirad did the insert statements for sex, agency, purchasertype, propertytype, loantype, loanpurpose, actiontaken, null table
@@ -57,7 +58,8 @@ number of owner occupied units, and number of 1 to 4 family units can be generat
 
 
 4. (problems, how long)
-When using the COPY function to import the data from the csv file into the table, we had a syntax error for the INTEGER columns because any empty cell ('') was considered a string, not a null cell. To fix this, I looked at the COPY documentation (https://www.postgresql.org/docs/17/sql-copy.html) and found the FORCE_NULL and NULL sections to make any empty cells into the NULL datatype for the INTEGER columns.
+When using the COPY function to import the data from the csv file into the table, we had a syntax error for the INTEGER columns because any empty cell ('') was considered a string, not a null cell. To fix this, we looked at the COPY documentation (https://www.postgresql.org/docs/17/sql-copy.html) and found the FORCE_NULL and NULL sections to make any empty cells into the NULL datatype for the INTEGER columns.
 We weren't sure how to create a new unique primary key for applicant_id for example. When we looked it up, we found the option to include SERIAL to generate a unique integer id: https://neon.tech/postgresql/postgresql-tutorial/postgresql-primary-key
-When trying to insert values into the smaller tables (for example ethnicity code and ethnicity name), we selected distinct values from the applicant ethnicities and after selected distinct values from the coapplicant ethnicities. However, because the ethnicity code was a primary key, we had trouble trying to insert duplicate ethnicities. We used the 'ON CONFLICT DO NOTHING' that we found in the postgresql documentation.
+When trying to insert values into the smaller tables (for example ethnicity code and ethnicity name), we selected distinct values from the applicant ethnicities and after selected distinct values from the coapplicant ethnicities. However, because the ethnicity code was a primary key, we had trouble trying to insert duplicate ethnicities. We used the 'ON CONFLICT DO NOTHING' that we found in the postgresql documentation (https://www.postgresql.org/docs/current/sql-insert.html).
 We couldn't figure out how to link the preliminary table to the race column so we temporarily added an id column to preliminary: https://www.postgresql.org/docs/current/sql-altertable.html.
+So far, we've taken 11 hours.
