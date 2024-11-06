@@ -24,6 +24,8 @@ DROP TABLE IF EXISTS Application CASCADE;
 DROP TABLE IF EXISTS DenialCode CASCADE;
 DROP TABLE IF EXISTS DenialReasons CASCADE;
 
+
+-- tables with no depencies
 CREATE TABLE Ethnicity(
     ethnicity VARCHAR(1) PRIMARY KEY,
     ethnicity_name VARCHAR(90)
@@ -51,7 +53,7 @@ CREATE TABLE PurchaserType(
 );
 
 CREATE TABLE PropertyType(
-    property_type VARCHAR(1) PRIMARY KEY, 
+    property_type INTEGER PRIMARY KEY, 
     property_type_name VARCHAR(65)
 );
 
@@ -106,6 +108,11 @@ CREATE TABLE LienStatus(
     lien_status_name VARCHAR(35)
 );
 
+CREATE TABLE DenialCode(
+    denial_code VARCHAR(1) PRIMARY KEY,
+    denial_name VARCHAR(50)
+);
+
 CREATE TABLE NullTable(
     application_date_indicator INTEGER,
     sequence_number VARCHAR(7),
@@ -113,8 +120,36 @@ CREATE TABLE NullTable(
     edit_status VARCHAR(1)
 );
 
+-- has dependencies
+CREATE TABLE Application(
+    application_id SERIAL PRIMARY KEY,
+    as_of_year INTEGER,
+    respondent_id VARCHAR(10),
+    agency_code INTEGER,
+    loan_type INTEGER,
+    loan_purpose INTEGER,
+    owner_occupancy INTEGER,
+    loan_amount_000s INTEGER,
+    preapproval INTEGER,
+    action_taken INTEGER,
+    property_type INTEGER,
+    purchaser_type INTEGER,
+    rate_spread NUMERIC(5, 2),
+    hoepa_status INTEGER,
+    lien_status INTEGER,
+    FOREIGN KEY (hoepa_status) REFERENCES HoepaStatus(hoepa_status),
+    FOREIGN KEY (lien_status) REFERENCES LienStatus(lien_status),
+    FOREIGN KEY (action_taken) REFERENCES ActionTaken(action_taken),
+    FOREIGN KEY (property_type) REFERENCES PropertyType(property_type),
+    FOREIGN KEY (purchaser_type) REFERENCES PurchaserType(purchaser_type),
+    FOREIGN KEY (preapproval) REFERENCES Preapproval(preapproval),
+    FOREIGN KEY (owner_occupancy) REFERENCES OwnerOccupancy(owner_occupancy),
+    FOREIGN KEY (loan_purpose) REFERENCES LoanPurpose(loan_purpose),
+    FOREIGN KEY (loan_type) REFERENCES LoanType(loan_type),
+    FOREIGN KEY (agency_code) REFERENCES Agency(agency_code)
+);
+
 CREATE TABLE Applicant(
-    applicant_id SERIAL PRIMARY KEY,
     applicant_ethnicity VARCHAR(1),
     applicant_sex INTEGER,
     coapplicant_ethnicity VARCHAR(1),
@@ -126,31 +161,32 @@ CREATE TABLE Applicant(
     FOREIGN KEY (coapplicant_sex) REFERENCES Sex(sex)
 );
 
+CREATE TABLE DenialReasons(
+    denial_num INTEGER,
+    application_id INTEGER,
+    denial_code VARCHAR(1),
+    FOREIGN KEY (application_id) REFERENCES Application(application_id),
+    FOREIGN KEY (denial_code) REFERENCES DenialCode(denial_code)
+);
 
 CREATE TABLE ApplicantRace(
     race_num INTEGER, -- if there are multiple applicant races, identify if its the first, second, etc
-    applicant_id INTEGER,
+    application_id INTEGER,
     race_code VARCHAR(1),
-    FOREIGN KEY (applicant_id) REFERENCES Applicant(applicant_id),
+    FOREIGN KEY (application_id) REFERENCES Application(application_id),
     FOREIGN KEY (race_code) REFERENCES RaceCode(race_code)
 );
 
 CREATE TABLE CoapplicantRace(
     race_num INTEGER, -- if there are multiple applicant races, identify if its the first, second, etc
-    applicant_id INTEGER,
+    application_id INTEGER,
     race_code VARCHAR(1),
-    FOREIGN KEY (applicant_id) REFERENCES Applicant(applicant_id),
+    FOREIGN KEY (application_id) REFERENCES Application(application_id),
     FOREIGN KEY (race_code) REFERENCES RaceCode(race_code)
 );
 
-CREATE TABLE Property(
-    property_id SERIAL PRIMARY KEY,
-    property_type VARCHAR(1),
-    FOREIGN KEY (property_type) REFERENCES PropertyType(property_type)
-);
-
 CREATE TABLE Location(
-    location_id SERIAL PRIMARY KEY,
+    application_id INTEGER,
     msamd VARCHAR(5),
     state_code VARCHAR(2),
     county_code VARCHAR(3),
@@ -164,51 +200,6 @@ CREATE TABLE Location(
     FOREIGN KEY (msamd) REFERENCES MSAMD(msamd),
     FOREIGN KEY (state_code) REFERENCES State(state_code),
     FOREIGN KEY (county_code) REFERENCES County(county_code)
-);
-
-CREATE TABLE Application(
-    application_id SERIAL PRIMARY KEY,
-    as_of_year INTEGER,
-    respondent_id VARCHAR(10),
-    agency_code INTEGER,
-    loan_type INTEGER,
-    loan_purpose INTEGER,
-    owner_occupancy INTEGER,
-    loan_amount_000s INTEGER,
-    preapproval INTEGER,
-    action_taken INTEGER,
-    applicant_id INTEGER,
-    property_id INTEGER,
-    location_id INTEGER,
-    purchaser_type INTEGER,
-    rate_spread NUMERIC(5, 2),
-    hoepa_status INTEGER,
-    lien_status INTEGER,
-    FOREIGN KEY (hoepa_status) REFERENCES HoepaStatus(hoepa_status),
-    FOREIGN KEY (lien_status) REFERENCES LienStatus(lien_status),
-    FOREIGN KEY (action_taken) REFERENCES ActionTaken(action_taken),
-    FOREIGN KEY (applicant_id) REFERENCES Applicant(applicant_id),
-    FOREIGN KEY (property_id) REFERENCES Property(property_id),
-    FOREIGN KEY (location_id) REFERENCES Location(location_id),
-    FOREIGN KEY (purchaser_type) REFERENCES PurchaserType(purchaser_type),
-    FOREIGN KEY (preapproval) REFERENCES Preapproval(preapproval),
-    FOREIGN KEY (owner_occupancy) REFERENCES OwnerOccupancy(owner_occupancy),
-    FOREIGN KEY (loan_purpose) REFERENCES LoanPurpose(loan_purpose),
-    FOREIGN KEY (loan_type) REFERENCES LoanType(loan_type),
-    FOREIGN KEY (agency_code) REFERENCES Agency(agency_code)
-);
-
-CREATE TABLE DenialCode(
-    denial_code VARCHAR(1) PRIMARY KEY,
-    denial_name VARCHAR(50)
-);
-
-CREATE TABLE DenialReasons(
-    denial_id SERIAL PRIMARY KEY,
-    application_id INTEGER,
-    denial_code VARCHAR(1),
-    FOREIGN KEY (application_id) REFERENCES Application(application_id),
-    FOREIGN KEY (denial_code) REFERENCES DenialCode(denial_code)
 );
 
 -- applicant ethnicities
@@ -360,16 +351,106 @@ INSERT INTO LienStatus(lien_status, lien_status_name)
 SELECT DISTINCT lien_status, lien_status_name FROM preliminary
 WHERE lien_status IS NOT NULL;
 
+-- denial code 1
+INSERT INTO DenialCode(denial_code, denial_name)
+SELECT DISTINCT denial_reason_1, denial_reason_name_1 FROM preliminary
+WHERE denial_reason_1 IS NOT NULL
+ON CONFLICT(denial_code) DO NOTHING;;
+
+-- denial code 2
+INSERT INTO DenialCode(denial_code, denial_name)
+SELECT DISTINCT denial_reason_2, denial_reason_name_2 FROM preliminary
+WHERE denial_reason_2 IS NOT NULL
+ON CONFLICT(denial_code) DO NOTHING;;
+
+-- denial code 3
+INSERT INTO DenialCode(denial_code, denial_name)
+SELECT DISTINCT denial_reason_3, denial_reason_name_3 FROM preliminary
+WHERE denial_reason_3 IS NOT NULL
+ON CONFLICT(denial_code) DO NOTHING;;
+
 -- null table
 INSERT INTO NullTable(application_date_indicator, sequence_number, edit_status, edit_status_name)
 SELECT DISTINCT application_date_indicator, sequence_number, edit_status, edit_status_name FROM preliminary;
+
+-- application
+INSERT INTO Application(as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, purchaser_type, rate_spread, hoepa_status, lien_status)
+SELECT as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, purchaser_type, rate_spread, hoepa_status, lien_status FROM preliminary;
 
 -- applicant
 INSERT INTO Applicant(applicant_ethnicity, applicant_sex, coapplicant_ethnicity, coapplicant_sex, applicant_income_000s)
 SELECT applicant_ethnicity, applicant_sex, co_applicant_ethnicity, co_applicant_sex, applicant_income_000s FROM preliminary;
 
+-- temporarily adding a way to link applicant race with the preliminary table
+ALTER TABLE preliminary ADD COLUMN id SERIAL PRIMARY KEY;
+
 -- applicant race 1
--- INSERT INTO ApplicantRace(applicant_id)
--- SELECT applicant_id FROM Applicant;
--- UPDATE ApplicantRace SET race_code = (SELECT applicant_race_1 FROM preliminary WHERE );
--- UPDATE ApplicantRace SET race_num = 1 WHERE race_num IS NULL;
+INSERT INTO ApplicantRace(application_id, race_num, race_code)
+SELECT id, 1, applicant_race_1 FROM preliminary
+WHERE id IS NOT NULL AND applicant_race_1 IS NOT NULL;
+
+-- applicant race 2
+INSERT INTO ApplicantRace(application_id, race_num, race_code)
+SELECT id, 2, applicant_race_2 FROM preliminary
+WHERE id IS NOT NULL AND applicant_race_2 IS NOT NULL;
+
+-- applicant race 3
+INSERT INTO ApplicantRace(application_id, race_num, race_code)
+SELECT id, 3, applicant_race_3 FROM preliminary
+WHERE id IS NOT NULL AND applicant_race_3 IS NOT NULL;
+
+-- applicant race 4
+INSERT INTO ApplicantRace(application_id, race_num, race_code)
+SELECT id, 4, applicant_race_4 FROM preliminary
+WHERE id IS NOT NULL AND applicant_race_4 IS NOT NULL;
+
+-- applicant race 5
+INSERT INTO ApplicantRace(application_id, race_num, race_code)
+SELECT id, 5, applicant_race_5 FROM preliminary
+WHERE id IS NOT NULL AND applicant_race_5 IS NOT NULL;
+
+-- coapplicant race 1
+INSERT INTO CoapplicantRace(application_id, race_num, race_code)
+SELECT id, 1, co_applicant_race_1 FROM preliminary
+WHERE id IS NOT NULL AND co_applicant_race_1 IS NOT NULL;
+
+-- coapplicant race 2
+INSERT INTO CoapplicantRace(application_id, race_num, race_code)
+SELECT id, 2, co_applicant_race_2 FROM preliminary
+WHERE id IS NOT NULL AND co_applicant_race_2 IS NOT NULL;
+
+-- coapplicant race 3
+INSERT INTO CoapplicantRace(application_id, race_num, race_code)
+SELECT id, 3, co_applicant_race_3 FROM preliminary
+WHERE id IS NOT NULL AND co_applicant_race_3 IS NOT NULL;
+
+-- coapplicant race 4
+INSERT INTO CoapplicantRace(application_id, race_num, race_code)
+SELECT id, 4, co_applicant_race_4 FROM preliminary
+WHERE id IS NOT NULL AND co_applicant_race_4 IS NOT NULL;
+
+-- coapplicant race 5
+INSERT INTO CoapplicantRace(application_id, race_num, race_code)
+SELECT id, 5, co_applicant_race_5 FROM preliminary
+WHERE id IS NOT NULL AND co_applicant_race_5 IS NOT NULL;
+
+-- location
+INSERT INTO Location(msamd, state_code, county_code, census_tract_number, population, minority_population, hud_median_family_income, tract_to_msamd_income, number_of_owner_occupied_units, number_of_1_to_4_family_units)
+SELECT msamd, state_code, county_code, census_tract_number, population, minority_population, hud_median_family_income, tract_to_msamd_income, number_of_owner_occupied_units, number_of_1_to_4_family_units FROM preliminary;
+
+-- denial reason 1
+INSERT INTO DenialReasons(application_id, denial_num, denial_code)
+SELECT id, 1, denial_reason_1 FROM preliminary
+WHERE id IS NOT NULL AND denial_reason_1 IS NOT NULL;
+
+-- denial reason 2
+INSERT INTO DenialReasons(application_id, denial_num, denial_code)
+SELECT id, 2, denial_reason_2 FROM preliminary
+WHERE id IS NOT NULL AND denial_reason_2 IS NOT NULL;
+
+-- denial reason 3
+INSERT INTO DenialReasons(application_id, denial_num, denial_code)
+SELECT id, 3, denial_reason_3 FROM preliminary
+WHERE id IS NOT NULL AND denial_reason_3 IS NOT NULL;
+
+ALTER TABLE preliminary DROP COLUMN id;

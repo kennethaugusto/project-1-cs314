@@ -9,7 +9,7 @@ CREATE TABLE preliminary (
     loan_type_name VARCHAR(30),
     loan_type INTEGER,
     property_type_name VARCHAR(65),
-    property_type VARCHAR(1),
+    property_type INTEGER,
     loan_purpose_name VARCHAR(20),
     loan_purpose INTEGER,
     owner_occupancy_name VARCHAR(50),
@@ -81,6 +81,6 @@ CREATE TABLE preliminary (
     application_date_indicator INTEGER
 );
 
-COPY preliminary FROM 'C:\Program Files\PostgreSQL\17\import\hmda_2017_nj_all-records_labels.csv' (FORMAT csv, HEADER true, DELIMITER ',', NULL '', FORCE_NULL(*));
+COPY preliminary FROM 'C:\Program Files\PostgreSQL\17\import\hmda_2017_nj_all-records_labels.csv' (FORMAT csv, HEADER true, DELIMITER ',', NULL '', FORCE_NULL *);
 -- Used https://www.postgresql.org/docs/17/sql-copy.html
 
