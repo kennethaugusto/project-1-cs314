@@ -1,3 +1,90 @@
+DROP TABLE IF EXISTS preliminary;
+
+CREATE TABLE preliminary (
+     as_of_year SMALLINT,
+     respondent_id VARCHAR(10),
+     agency_name VARCHAR(43),
+     agency_abbr VARCHAR(4),
+     agency_code SMALLINT,
+     loan_type_name VARCHAR(18),
+     loan_type SMALLINT,
+     property_type_name VARCHAR(61),
+     property_type SMALLINT,
+     loan_purpose_name VARCHAR(16),
+     loan_purpose SMALLINT,
+     owner_occupancy_name VARCHAR(42),
+     owner_occupancy SMALLINT,
+     loan_amount_000s INTEGER,
+     preapproval_name VARCHAR(29),
+     preapproval SMALLINT,
+     action_taken_name VARCHAR(51),
+     action_taken SMALLINT,
+     msamd_name VARCHAR(44),
+     msamd INTEGER,
+     state_name VARCHAR(10),
+     state_abbr CHAR(2),
+     state_code SMALLINT,
+     county_name VARCHAR(17),
+     county_code SMALLINT,
+     census_tract_number NUMERIC(7,2),
+     applicant_ethnicity_name VARCHAR(100),
+     applicant_ethnicity SMALLINT,
+     co_applicant_ethnicity_name VARCHAR(100),
+     co_applicant_ethnicity SMALLINT,
+     applicant_race_name_1 VARCHAR(100),
+     applicant_race_1 SMALLINT,
+     applicant_race_name_2 VARCHAR(41),
+     applicant_race_2 SMALLINT,
+     applicant_race_name_3 VARCHAR(41),
+     applicant_race_3 SMALLINT,
+     applicant_race_name_4 VARCHAR(41),
+     applicant_race_4 SMALLINT,
+     applicant_race_name_5 VARCHAR(5),
+     applicant_race_5 SMALLINT,
+     co_applicant_race_name_1 VARCHAR(81),
+     co_applicant_race_1 SMALLINT,
+     co_applicant_race_name_2 VARCHAR(41),
+     co_applicant_race_2 SMALLINT,
+     co_applicant_race_name_3 VARCHAR(41),
+     co_applicant_race_3 SMALLINT,
+     co_applicant_race_name_4 VARCHAR(41),
+     co_applicant_race_4 SMALLINT,
+     co_applicant_race_name_5 VARCHAR(5),
+     co_applicant_race_5 SMALLINT,
+     applicant_sex_name VARCHAR(100),
+     applicant_sex SMALLINT,
+     co_applicant_sex_name VARCHAR(100),
+     co_applicant_sex SMALLINT,
+     applicant_income_000s INTEGER,
+     purchaser_type_name VARCHAR(100),
+     purchaser_type SMALLINT,
+     denial_reason_name_1 VARCHAR(50),
+     denial_reason_1 SMALLINT,
+     denial_reason_name_2 VARCHAR(50),
+     denial_reason_2 SMALLINT,
+     denial_reason_name_3 VARCHAR(50),
+     denial_reason_3 SMALLINT,
+     rate_spread NUMERIC(5,2),
+     hoepa_status_name VARCHAR(20),
+     hoepa_status SMALLINT,
+     lien_status_name VARCHAR(35),
+     lien_status SMALLINT,
+     edit_status_name VARCHAR(29),
+     edit_status SMALLINT,
+     sequence_number INTEGER,
+     population INTEGER,
+     minority_population NUMERIC(15,2),
+     hud_median_family_income INTEGER,
+     tract_to_msamd_income NUMERIC(16,2),
+     number_of_owner_occupied_units INTEGER,
+     number_of_1_to_4_family_units INTEGER,
+     application_date_indicator SMALLINT
+ );
+ 
+ 
+ COPY preliminary FROM 'C:\Users\cshah\Desktop\hmda_2017_nj_all-records_labels.csv' (FORMAT csv, HEADER true, DELIMITER ',', NULL '', FORCE_NULL(number_of_1_to_4_family_units, number_of_owner_occupied_units, tract_to_msamd_income, minority_population, population, census_tract_number, county_code, msamd, sequence_number, edit_status, applicant_income_000s, denial_reason_1, denial_reason_2, denial_reason_3, applicant_race_1, applicant_race_2, applicant_race_3, applicant_race_4, applicant_race_5, co_applicant_race_1, co_applicant_race_2, co_applicant_race_3, co_applicant_race_4, co_applicant_race_5, as_of_year, agency_code, loan_type, property_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, applicant_sex, co_applicant_sex, purchaser_type, rate_spread, hoepa_status, lien_status, hud_median_family_income, application_date_indicator));
+
+
 DROP TABLE IF EXISTS Ethnicity CASCADE;
 DROP TABLE IF EXISTS RaceCode CASCADE;
 DROP TABLE IF EXISTS Sex CASCADE;
@@ -24,7 +111,7 @@ DROP TABLE IF EXISTS Application CASCADE;
 DROP TABLE IF EXISTS DenialCode CASCADE;
 DROP TABLE IF EXISTS DenialReasons CASCADE;
 
-
+ALTER TABLE preliminary ADD COLUMN id SERIAL PRIMARY KEY;
 -- tables with no depencies
 CREATE TABLE Ethnicity(
     ethnicity VARCHAR(1) PRIMARY KEY,
@@ -113,16 +200,10 @@ CREATE TABLE DenialCode(
     denial_name VARCHAR(50)
 );
 
-CREATE TABLE NullTable(
-    application_date_indicator INTEGER,
-    sequence_number VARCHAR(7),
-    edit_status_name VARCHAR(50),
-    edit_status VARCHAR(1)
-);
-
 -- has dependencies
 CREATE TABLE Application(
     application_id SERIAL PRIMARY KEY,
+    prelim_id INTEGER,
     as_of_year INTEGER,
     respondent_id VARCHAR(10),
     agency_code INTEGER,
@@ -147,9 +228,20 @@ CREATE TABLE Application(
     FOREIGN KEY (loan_purpose) REFERENCES LoanPurpose(loan_purpose),
     FOREIGN KEY (loan_type) REFERENCES LoanType(loan_type),
     FOREIGN KEY (agency_code) REFERENCES Agency(agency_code)
+    
+);
+
+CREATE TABLE NullTable(
+    application_id SERIAL,
+    application_date_indicator INTEGER,
+    sequence_number VARCHAR(7),
+    edit_status_name VARCHAR(50),
+    edit_status VARCHAR(1),
+    FOREIGN KEY (application_id) REFERENCES Application(application_id)
 );
 
 CREATE TABLE Applicant(
+	application_id INTEGER,
     applicant_ethnicity VARCHAR(1),
     applicant_sex INTEGER,
     coapplicant_ethnicity VARCHAR(1),
@@ -158,7 +250,8 @@ CREATE TABLE Applicant(
     FOREIGN KEY (applicant_ethnicity) REFERENCES Ethnicity(ethnicity),
     FOREIGN KEY (coapplicant_ethnicity) REFERENCES Ethnicity(ethnicity),
     FOREIGN KEY (applicant_sex) REFERENCES Sex(sex),
-    FOREIGN KEY (coapplicant_sex) REFERENCES Sex(sex)
+    FOREIGN KEY (coapplicant_sex) REFERENCES Sex(sex),
+    FOREIGN KEY (application_id) REFERENCES Application(application_id) 
 );
 
 CREATE TABLE DenialReasons(
@@ -197,6 +290,7 @@ CREATE TABLE Location(
     tract_to_msamd_income VARCHAR(20),
     number_of_owner_occupied_units VARCHAR(8),
     number_of_1_to_4_family_units VARCHAR(8),
+    FOREIGN KEY (application_id) REFERENCES Application(application_id),
     FOREIGN KEY (msamd) REFERENCES MSAMD(msamd),
     FOREIGN KEY (state_code) REFERENCES State(state_code),
     FOREIGN KEY (county_code) REFERENCES County(county_code)
@@ -370,19 +464,34 @@ WHERE denial_reason_3 IS NOT NULL
 ON CONFLICT(denial_code) DO NOTHING;;
 
 -- null table
-INSERT INTO NullTable(application_date_indicator, sequence_number, edit_status, edit_status_name)
-SELECT DISTINCT application_date_indicator, sequence_number, edit_status, edit_status_name FROM preliminary;
+INSERT INTO NullTable(application_id, application_date_indicator, sequence_number, edit_status, edit_status_name)
+SELECT
+    Application.application_id,
+    preliminary.application_date_indicator,
+    preliminary.sequence_number,
+    preliminary.edit_status,
+    preliminary.edit_status_name
+FROM preliminary
+JOIN Application ON preliminary.id = Application.application_id;
 
 -- application
-INSERT INTO Application(as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, purchaser_type, rate_spread, hoepa_status, lien_status)
-SELECT as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, purchaser_type, rate_spread, hoepa_status, lien_status FROM preliminary;
+INSERT INTO Application(prelim_id,as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, purchaser_type, rate_spread, hoepa_status, lien_status)
+SELECT id, as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, purchaser_type, rate_spread, hoepa_status, lien_status FROM preliminary;
 
 -- applicant
-INSERT INTO Applicant(applicant_ethnicity, applicant_sex, coapplicant_ethnicity, coapplicant_sex, applicant_income_000s)
-SELECT applicant_ethnicity, applicant_sex, co_applicant_ethnicity, co_applicant_sex, applicant_income_000s FROM preliminary;
+INSERT INTO Applicant(application_id, applicant_ethnicity, applicant_sex, coapplicant_ethnicity, coapplicant_sex, applicant_income_000s)
+SELECT
+    Application.application_id,
+    preliminary.applicant_ethnicity,
+    preliminary.applicant_sex,
+    preliminary.co_applicant_ethnicity,
+    preliminary.co_applicant_sex,
+    preliminary.applicant_income_000s
+FROM preliminary
+JOIN Application ON preliminary.id = Application.application_id;
 
 -- temporarily adding a way to link applicant race with the preliminary table
-ALTER TABLE preliminary ADD COLUMN id SERIAL PRIMARY KEY;
+-- ALTER TABLE preliminary ADD COLUMN id SERIAL PRIMARY KEY;
 
 -- applicant race 1
 INSERT INTO ApplicantRace(application_id, race_num, race_code)
@@ -435,8 +544,21 @@ SELECT id, 5, co_applicant_race_5 FROM preliminary
 WHERE id IS NOT NULL AND co_applicant_race_5 IS NOT NULL;
 
 -- location
-INSERT INTO Location(msamd, state_code, county_code, census_tract_number, population, minority_population, hud_median_family_income, tract_to_msamd_income, number_of_owner_occupied_units, number_of_1_to_4_family_units)
-SELECT msamd, state_code, county_code, census_tract_number, population, minority_population, hud_median_family_income, tract_to_msamd_income, number_of_owner_occupied_units, number_of_1_to_4_family_units FROM preliminary;
+INSERT INTO Location(application_id, msamd, state_code, county_code, census_tract_number, population, minority_population, hud_median_family_income, tract_to_msamd_income, number_of_owner_occupied_units, number_of_1_to_4_family_units)
+SELECT
+    Application.application_id,
+    preliminary.msamd,
+    preliminary.state_code,
+    preliminary.county_code,
+    preliminary.census_tract_number,
+    preliminary.population,
+    preliminary.minority_population,
+    preliminary.hud_median_family_income,
+    preliminary.tract_to_msamd_income,
+    preliminary.number_of_owner_occupied_units,
+    preliminary.number_of_1_to_4_family_units
+FROM preliminary
+JOIN Application ON preliminary.id = Application.application_id;
 
 -- denial reason 1
 INSERT INTO DenialReasons(application_id, denial_num, denial_code)
@@ -453,4 +575,191 @@ INSERT INTO DenialReasons(application_id, denial_num, denial_code)
 SELECT id, 3, denial_reason_3 FROM preliminary
 WHERE id IS NOT NULL AND denial_reason_3 IS NOT NULL;
 
+SELECT * FROM  Ethnicity ;
+SELECT * FROM  RaceCode ;
+SELECT * FROM  Sex ;
+SELECT * FROM  Agency ;
+SELECT * FROM  PurchaserType ;
+SELECT * FROM  PropertyType ;
+SELECT * FROM  LoanType ;
+SELECT * FROM  LoanPurpose ;
+SELECT * FROM  State ;
+SELECT * FROM  County ;
+SELECT * FROM  MSAMD ;
+SELECT * FROM  Preapproval ;
+SELECT * FROM  OwnerOccupancy ;
+SELECT * FROM  ActionTaken ;
+SELECT * FROM  HoepaStatus ;
+SELECT * FROM  LienStatus ;
+SELECT * FROM  NullTable ;
+SELECT * FROM  Applicant ;
+SELECT * FROM  ApplicantRace ;
+SELECT * FROM  CoapplicantRace ;
+SELECT * FROM  Location ;
+SELECT * FROM  Application ;
+SELECT * FROM  DenialCode ;
+SELECT * FROM  DenialReasons ;
+
 ALTER TABLE preliminary DROP COLUMN id;
+
+COPY (
+    SELECT
+        Application.as_of_year,
+        Application.respondent_id,
+        Agency.agency_name,
+        Agency.agency_abbr,
+        Application.agency_code,
+        LoanType.loan_type_name,
+        Application.loan_type,
+        PropertyType.property_type_name,
+        Application.property_type,
+        LoanPurpose.loan_purpose_name,
+        Application.loan_purpose,
+        OwnerOccupancy.owner_occupancy_name,
+        Application.owner_occupancy,
+        Application.loan_amount_000s,
+        Preapproval.preapproval_name,
+        Application.preapproval,
+        ActionTaken.action_taken_name,
+        Application.action_taken,
+        MSAMD.msamd_name,
+        Location.msamd::INTEGER AS msamd,
+        State.state_name,
+        State.state_abbr,
+        Location.state_code::SMALLINT AS state_code,
+        County.county_name,
+        Location.county_code::SMALLINT AS county_code,
+        Location.census_tract_number::NUMERIC(7,2),
+        ApplicantEthnicity.ethnicity_name AS applicant_ethnicity_name,
+        Applicant.applicant_ethnicity::SMALLINT AS applicant_ethnicity,
+        CoApplicantEthnicity.ethnicity_name AS co_applicant_ethnicity_name,
+        Applicant.coapplicant_ethnicity::SMALLINT AS co_applicant_ethnicity,
+        ApplicantRaceData.applicant_race_name_1,
+        ApplicantRaceData.applicant_race_1::SMALLINT AS applicant_race_1,
+        ApplicantRaceData.applicant_race_name_2,
+        ApplicantRaceData.applicant_race_2::SMALLINT AS applicant_race_2,
+        ApplicantRaceData.applicant_race_name_3,
+        ApplicantRaceData.applicant_race_3::SMALLINT AS applicant_race_3,
+        ApplicantRaceData.applicant_race_name_4,
+        ApplicantRaceData.applicant_race_4::SMALLINT AS applicant_race_4,
+        ApplicantRaceData.applicant_race_name_5,
+        ApplicantRaceData.applicant_race_5::SMALLINT AS applicant_race_5,
+        CoApplicantRaceData.co_applicant_race_name_1,
+        CoApplicantRaceData.co_applicant_race_1::SMALLINT AS co_applicant_race_1,
+        CoApplicantRaceData.co_applicant_race_name_2,
+        CoApplicantRaceData.co_applicant_race_2::SMALLINT AS co_applicant_race_2,
+        CoApplicantRaceData.co_applicant_race_name_3,
+        CoApplicantRaceData.co_applicant_race_3::SMALLINT AS co_applicant_race_3,
+        CoApplicantRaceData.co_applicant_race_name_4,
+        CoApplicantRaceData.co_applicant_race_4::SMALLINT AS co_applicant_race_4,
+        CoApplicantRaceData.co_applicant_race_name_5,
+        CoApplicantRaceData.co_applicant_race_5::SMALLINT AS co_applicant_race_5,
+        ApplicantSex.sex_name AS applicant_sex_name,
+        Applicant.applicant_sex::SMALLINT AS applicant_sex,
+        CoApplicantSex.sex_name AS co_applicant_sex_name,
+        Applicant.coapplicant_sex::SMALLINT AS co_applicant_sex,
+        Applicant.applicant_income_000s::INTEGER AS applicant_income_000s,
+        PurchaserType.purchaser_type_name,
+        Application.purchaser_type,
+        DenialReasonData.denial_reason_name_1,
+        DenialReasonData.denial_reason_1::SMALLINT AS denial_reason_1,
+        DenialReasonData.denial_reason_name_2,
+        DenialReasonData.denial_reason_2::SMALLINT AS denial_reason_2,
+        DenialReasonData.denial_reason_name_3,
+        DenialReasonData.denial_reason_3::SMALLINT AS denial_reason_3,
+        Application.rate_spread,
+        HoepaStatus.hoepa_status_name,
+        Application.hoepa_status,
+        LienStatus.lien_status_name,
+        Application.lien_status,
+        NullTable.edit_status_name,
+        NullTable.edit_status::SMALLINT AS edit_status,
+        NullTable.sequence_number::INTEGER AS sequence_number,
+        Location.population::INTEGER AS population,
+        Location.minority_population::NUMERIC(15,2),
+        Location.hud_median_family_income,
+        Location.tract_to_msamd_income::NUMERIC(16,2),
+        Location.number_of_owner_occupied_units::INTEGER AS number_of_owner_occupied_units,
+        Location.number_of_1_to_4_family_units::INTEGER AS number_of_1_to_4_family_units,
+        NullTable.application_date_indicator::SMALLINT AS application_date_indicator
+    FROM Application
+    LEFT JOIN Agency ON Application.agency_code = Agency.agency_code
+    LEFT JOIN LoanType ON Application.loan_type = LoanType.loan_type
+    LEFT JOIN PropertyType ON Application.property_type = PropertyType.property_type
+    LEFT JOIN LoanPurpose ON Application.loan_purpose = LoanPurpose.loan_purpose
+    LEFT JOIN OwnerOccupancy ON Application.owner_occupancy = OwnerOccupancy.owner_occupancy
+    LEFT JOIN Preapproval ON Application.preapproval = Preapproval.preapproval
+    LEFT JOIN ActionTaken ON Application.action_taken = ActionTaken.action_taken
+    LEFT JOIN PurchaserType ON Application.purchaser_type = PurchaserType.purchaser_type
+    LEFT JOIN HoepaStatus ON Application.hoepa_status = HoepaStatus.hoepa_status
+    LEFT JOIN LienStatus ON Application.lien_status = LienStatus.lien_status
+    LEFT JOIN Applicant ON Application.application_id = Applicant.application_id
+    LEFT JOIN Sex AS ApplicantSex ON Applicant.applicant_sex = ApplicantSex.sex
+    LEFT JOIN Sex AS CoApplicantSex ON Applicant.coapplicant_sex = CoApplicantSex.sex
+    LEFT JOIN Ethnicity AS ApplicantEthnicity ON Applicant.applicant_ethnicity = ApplicantEthnicity.ethnicity
+    LEFT JOIN Ethnicity AS CoApplicantEthnicity ON Applicant.coapplicant_ethnicity = CoApplicantEthnicity.ethnicity
+    LEFT JOIN Location ON Application.application_id = Location.application_id
+    LEFT JOIN State ON Location.state_code = State.state_code
+    LEFT JOIN County ON Location.county_code = County.county_code
+    LEFT JOIN MSAMD ON Location.msamd = MSAMD.msamd
+    LEFT JOIN (
+        SELECT
+            ApplicantRace.application_id,
+            MAX(CASE WHEN ApplicantRace.race_num = 1 THEN RaceCode.race_name END) AS applicant_race_name_1,
+            MAX(CASE WHEN ApplicantRace.race_num = 1 THEN ApplicantRace.race_code END) AS applicant_race_1,
+            MAX(CASE WHEN ApplicantRace.race_num = 2 THEN RaceCode.race_name END) AS applicant_race_name_2,
+            MAX(CASE WHEN ApplicantRace.race_num = 2 THEN ApplicantRace.race_code END) AS applicant_race_2,
+            MAX(CASE WHEN ApplicantRace.race_num = 3 THEN RaceCode.race_name END) AS applicant_race_name_3,
+            MAX(CASE WHEN ApplicantRace.race_num = 3 THEN ApplicantRace.race_code END) AS applicant_race_3,
+            MAX(CASE WHEN ApplicantRace.race_num = 4 THEN RaceCode.race_name END) AS applicant_race_name_4,
+            MAX(CASE WHEN ApplicantRace.race_num = 4 THEN ApplicantRace.race_code END) AS applicant_race_4,
+            MAX(CASE WHEN ApplicantRace.race_num = 5 THEN RaceCode.race_name END) AS applicant_race_name_5,
+            MAX(CASE WHEN ApplicantRace.race_num = 5 THEN ApplicantRace.race_code END) AS applicant_race_5
+        FROM ApplicantRace
+        LEFT JOIN RaceCode ON ApplicantRace.race_code = RaceCode.race_code
+        GROUP BY ApplicantRace.application_id
+    ) AS ApplicantRaceData ON Application.application_id = ApplicantRaceData.application_id
+    LEFT JOIN (
+        SELECT
+            CoapplicantRace.application_id,
+            MAX(CASE WHEN CoapplicantRace.race_num = 1 THEN RaceCode.race_name END) AS co_applicant_race_name_1,
+            MAX(CASE WHEN CoapplicantRace.race_num = 1 THEN CoapplicantRace.race_code END) AS co_applicant_race_1,
+            MAX(CASE WHEN CoapplicantRace.race_num = 2 THEN RaceCode.race_name END) AS co_applicant_race_name_2,
+            MAX(CASE WHEN CoapplicantRace.race_num = 2 THEN CoapplicantRace.race_code END) AS co_applicant_race_2,
+            MAX(CASE WHEN CoapplicantRace.race_num = 3 THEN RaceCode.race_name END) AS co_applicant_race_name_3,
+            MAX(CASE WHEN CoapplicantRace.race_num = 3 THEN CoapplicantRace.race_code END) AS co_applicant_race_3,
+            MAX(CASE WHEN CoapplicantRace.race_num = 4 THEN RaceCode.race_name END) AS co_applicant_race_name_4,
+            MAX(CASE WHEN CoapplicantRace.race_num = 4 THEN CoapplicantRace.race_code END) AS co_applicant_race_4,
+            MAX(CASE WHEN CoapplicantRace.race_num = 5 THEN RaceCode.race_name END) AS co_applicant_race_name_5,
+            MAX(CASE WHEN CoapplicantRace.race_num = 5 THEN CoapplicantRace.race_code END) AS co_applicant_race_5
+        FROM CoapplicantRace
+        LEFT JOIN RaceCode ON CoapplicantRace.race_code = RaceCode.race_code
+        GROUP BY CoapplicantRace.application_id
+    ) AS CoApplicantRaceData ON Application.application_id = CoApplicantRaceData.application_id
+    LEFT JOIN (
+        SELECT
+            DenialReasons.application_id,
+            MAX(CASE WHEN DenialReasons.denial_num = 1 THEN DenialCode.denial_name END) AS denial_reason_name_1,
+            MAX(CASE WHEN DenialReasons.denial_num = 1 THEN DenialReasons.denial_code END) AS denial_reason_1,
+            MAX(CASE WHEN DenialReasons.denial_num = 2 THEN DenialCode.denial_name END) AS denial_reason_name_2,
+            MAX(CASE WHEN DenialReasons.denial_num = 2 THEN DenialReasons.denial_code END) AS denial_reason_2,
+            MAX(CASE WHEN DenialReasons.denial_num = 3 THEN DenialCode.denial_name END) AS denial_reason_name_3,
+            MAX(CASE WHEN DenialReasons.denial_num = 3 THEN DenialReasons.denial_code END) AS denial_reason_3
+        FROM DenialReasons
+        LEFT JOIN DenialCode ON DenialReasons.denial_code = DenialCode.denial_code
+        GROUP BY DenialReasons.application_id
+    ) AS DenialReasonData ON Application.application_id = DenialReasonData.application_id
+    LEFT JOIN NullTable ON Application.application_id = NullTable.application_id
+
+) TO 'C:\Users\cshah\Desktop\Report.csv' DELIMITER ',' CSV HEADER;
+
+
+
+INSERT INTO PropertyType(property_type, property_type_name)
+VALUES ('Error Test 1', 'Fake');
+
+INSERT INTO LienStatus(lien_status, lien_status_name)
+VALUES ('Error Test 2', 'Fake');
+
+INSERT INTO Application(application_id,as_of_year)
+VALUES(NULL, 2035);

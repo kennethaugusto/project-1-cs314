@@ -2,7 +2,7 @@
 - Sarah Choi (ssc185), Nirad Shah (ns1361), Kenneth Augusto (kma234)
 
 1. 
-- known issues / functions that aren't working and explain
+- Everything seems like it's working fine. We put our error testing at the end of the script (2 statements testing incorrect type entries and 1 statement testing the absence of a required field/primary key)
 
 2. 
 - Collaborated with Nirad and Kenneth. 
@@ -10,10 +10,14 @@
 - To learn how to create new primary keys (not specified in csv) we referenced: https://neon.tech/postgresql/postgresql-tutorial/postgresql-primary-key
 - To learn how to alter a table to add a column: https://www.postgresql.org/docs/current/sql-altertable.html
 - Used https://www.postgresql.org/docs/current/sql-insert.html to figure out how to not enter the same key twice when importing data from two different columns into the same table (such as the applicant ethnicity and coapplicant ethnicity). Explained better in #4
-- Sarah did preliminary.sql. Together, we all decided how to put the tables into 3nf form, dividing the columns into separate tables and deciding how we would connect the tables using foreign keys and primary keys. Sarah made the create table statements. 
+- We all did preliminary.sql. Together, we all decided how to put the tables into 3nf form, dividing the columns into separate tables and deciding how we would connect the tables using foreign keys and primary keys. Sarah made the create table statements. 
 - Sarah did the insert statements for ethnicity, racecode, denialcode, application, applicant race, coapplicant race, denialreasons
 - Nirad did the insert statements for sex, agency, purchasertype, propertytype, loantype, loanpurpose, actiontaken, null table
 - Kenneth did the insert statements for state, county, msamd, preapproval, owner occupancy, hoepa status, lien status, location
+- In order to reconstruct the CSV at the end, we referenced different sites including https://stackoverflow.com/questions/1241178/pivot-on-multiple-columns-using-pivot-operator to show us how to pivot data and taught us CASE WHEN, and then used https://medium.com/@jan_hkmn/advanced-pivoting-in-sql-the-max-case-trick-50d58869fc96 to make up our final columns. We needed to use MAX(CASE WHEN...) to fill the row giving us our pivot table.
+- We referenced https://www.atlassian.com/data/sql/how-to-export-data-to-csv-or-excel to learn how to output data into csvs.
+- We also referenced  https://www.postgresql.org/docs/current/sql-copy.html to copy csv into a table.
+- This reference https://stackoverflow.com/questions/45892420/postgresql-copy-empty-string-as-null-not-work is how to prevent null values from being inputted.
 
 3. 
 - What is the minimum information would you need to collect from a user to allow
@@ -63,3 +67,5 @@ We weren't sure how to create a new unique primary key for applicant_id for exam
 When trying to insert values into the smaller tables (for example ethnicity code and ethnicity name), we selected distinct values from the applicant ethnicities and after selected distinct values from the coapplicant ethnicities. However, because the ethnicity code was a primary key, we had trouble trying to insert duplicate ethnicities. We used the 'ON CONFLICT DO NOTHING' that we found in the postgresql documentation (https://www.postgresql.org/docs/current/sql-insert.html).
 We couldn't figure out how to link the preliminary table to the race column so we temporarily added an id column to preliminary: https://www.postgresql.org/docs/current/sql-altertable.html.
 So far, we've taken 11 hours.
+It was a lot of difficulty figuring out how to reconstruct the tables into one CSV. Our line to do it is very long and tedious and we had to reference different YouTube videos and online forums to troubleshoot the problems we had.
+We also had a lot of trouble picking the schema and how all the tables were connect. We had to rewrite the connections several times during the course of the project as a result of error codes that we would run into when trying to reference another table.
