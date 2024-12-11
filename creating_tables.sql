@@ -475,8 +475,8 @@ FROM preliminary
 JOIN Application ON preliminary.id = Application.application_id;
 
 -- application
-INSERT INTO Application(prelim_id,as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, purchaser_type, rate_spread, hoepa_status, lien_status)
-SELECT id, as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, purchaser_type, rate_spread, hoepa_status, lien_status FROM preliminary;
+INSERT INTO Application(prelim_id,as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, property_type, purchaser_type, rate_spread, hoepa_status, lien_status)
+SELECT id, as_of_year, respondent_id, agency_code, loan_type, loan_purpose, owner_occupancy, loan_amount_000s, preapproval, action_taken, property_type, purchaser_type, rate_spread, hoepa_status, lien_status FROM preliminary;
 
 -- applicant
 INSERT INTO Applicant(application_id, applicant_ethnicity, applicant_sex, coapplicant_ethnicity, coapplicant_sex, applicant_income_000s)
